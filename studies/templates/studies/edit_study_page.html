@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit Study</h2>
+    
+    <form id="edit-study-form">
+        {% csrf_token %} 
+        
+        {# Fields: Populate with existing data via JS #}
+        
+        <div class="mb-3">
+            <label for="study_name" class="form-label">Study Name</label>
+            <input type="text" class="form-control" id="study_name" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="study_phase" class="form-label">Study Phase</label>
+            <select class="form-select" id="study_phase" required>
+                <option value="Phase I">Phase I</option>
+                <option value="Phase II">Phase II</option>
+                <option value="Phase III">Phase III</option>
+                <option value="Phase IV">Phase IV</option>
+            </select>
+        </div>
+        
+        <div class="mb-3">
+            <label for="sponsor_name" class="form-label">Sponsor Name</label>
+            <input type="text" class="form-control" id="sponsor_name" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="study_description" class="form-label">Study Description</label>
+            <textarea class="form-control" id="study_description" rows="3" required></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-success">Update</button>
+        <a href="{% url 'main_view_page' %}" class="btn btn-secondary">Cancel</a>
+        
+        <div id="message" class="mt-3"></div>
+    </form>
+</div>
+
+<script>
+    const studyId = {{ study_id }};
+    const apiUrl = `/api/studies/${studyId}/`;
+    const form = document.getElementById('edit-study-form');
+
+    // --- R (Read) - Load Existing Data ---
+    async function loadStudyData() {
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error('Failed to load study data.');
+            const study = await response.json();
+
+            document.getElementById('study_name').value = study.study_name;
+            document.getElementById('study_phase').value = study.study_phase;
+            document.getElementById('sponsor_name').value = study.sponsor_name;
+            document.getElementById('study_description').value = study.study_description;
+        } catch (error) {
+            console.error('Error loading study:', error);
+            document.getElementById('message').innerHTML = '<div class="alert alert-danger">Error loading study data for editing.</div>';
+        }
+    }
+
+    // --- U (Update) - Handle Form Submission ---
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const data = {
+            study_name: document.getElementById('study_name').value,
+            study_phase: document.getElementById('study_phase').value,
+            sponsor_name: document.getElementById('sponsor_name').value,
+            study_description: document.getElementById('study_description').value,
+        };
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'PUT', // Use PUT for full replacement, or PATCH for partial update
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                document.getElementById('message').innerHTML = '<div class="alert alert-danger">Error: ' + JSON.stringify(errorData) + '</div>';
+                return;
+            }
+
+            // Success: Redirect to Main View Page
+            window.location.href = "{% url 'main_view_page' %}";
+
+        } catch (error) {
+            console.error('Update failed:', error);
+            document.getElementById('message').innerHTML = '<div class="alert alert-danger">An unexpected error occurred during update.</div>';
+        }
+    });
+
+    loadStudyData();
+</script>
+{% endblock content %}

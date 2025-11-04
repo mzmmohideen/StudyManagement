@@ -1,0 +1,61 @@
+/* General body styles */
+body {
+    background-color: #f8f9fa; /* Light gray background */
+    color: #333; /* Darker text */
+    font-family: Arial, sans-serif;
+}
+
+/* Header and navigation bar adjustments */
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Container spacing for main content */
+.container {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+/* --- Table Styles (Specific to Study Management Main View) --- */
+
+.table {
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+/* Header row styling */
+.table thead th {
+    background-color: #343a40; /* Dark background like the navbar */
+    color: white;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+/* Action columns (View/Edit) should be narrow */
+.table td:last-child {
+    width: 150px; /* Adjust width for action buttons */
+    text-align: center;
+}
+
+/* Input fields and forms on Add/Edit pages */
+#add-study-form, #edit-study-form {
+    max-width: 600px;
+    margin: 0 auto; /* Center the form */
+    padding: 30px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure buttons are properly spaced */
+.d-flex.justify-content-between {
+    margin-bottom: 1.5rem;
+}
+
+/* Styling for the View Study details */
+#study-details .list-group-item {
+    border-left: 5px solid #007bff; /* Blue indicator bar */
+    margin-bottom: -1px;
+    font-size: 1.1rem;
+}

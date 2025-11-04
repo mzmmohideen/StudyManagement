@@ -1,0 +1,132 @@
+{% extends 'base.html' %} 
+{# Assuming you have a base.html for common layout/styles #}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Study Management</h2>
+    
+    <div class="d-flex justify-content-between mb-3">
+        <a href="{% url 'add_study_page' %}" class="btn btn-primary">Add Study</a>
+        <button id="delete-studies-btn" class="btn btn-danger" disabled>Delete Study</button>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="select-all"></th>
+                <th>Study Name</th>
+                <th>Study Phase</th>
+                <th>Sponsor Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="studies-table-body">
+            {# Study rows will be inserted here by JavaScript #}
+            <tr><td colspan="6" class="text-center">Loading studies...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const studiesBody = document.getElementById('studies-table-body');
+    const deleteBtn = document.getElementById('delete-studies-btn');
+    const apiUrl = '/api/studies/'; // Your DRF endpoint
+
+    // --- R (Read) - Fetch and Render Studies ---
+    async function fetchStudies() {
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error('Failed to fetch studies.');
+            const studies = await response.json();
+            
+            studiesBody.innerHTML = ''; // Clear loading message
+
+            studies.forEach(study => {
+                const row = studiesBody.insertRow();
+                
+                // 1. Get the base URL from Django first
+                const viewUrl = "{% url 'view_study_page' 0 %}".replace('/0/', `/${study.id}/`);
+                const editUrl = "{% url 'edit_study_page' 0 %}".replace('/0/', `/${study.id}/`);
+
+                row.innerHTML = `
+                    <td><input type="checkbox" data-id="${study.id}" class="study-checkbox"></td>
+                    <td>${study.study_name}</td>
+                    <td>${study.study_phase}</td>
+                    <td>${study.sponsor_name}</td>
+                    <td>${study.study_description.substring(0, 30)}...</td>
+                    <td>
+                        <a href="${viewUrl}" class="btn btn-sm btn-info">View</a>
+                        <a href="${editUrl}" class="btn btn-sm btn-warning">Edit</a>
+                    </td>
+                `;
+            });
+
+            // Re-attach event listeners for checkboxes after rendering
+            attachCheckboxListeners(); 
+
+        } catch (error) {
+            console.error('Error fetching studies:', error);
+            studiesBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading studies.</td></tr>';
+        }
+    }
+
+    // --- D (Delete) - Handle Deletion of Selected Studies ---
+    async function deleteStudy(id) {
+        try {
+            // CORRECT: Using JavaScript template literal (backticks) to build the URL string
+            const response = await fetch(`${apiUrl}${id}/`, { 
+                method: 'DELETE',
+                headers: {
+                    // IMPORTANT: Use the Django template tag for the CSRF token
+                    'X-CSRFToken': '{{ csrf_token }}' 
+                }
+            });
+            if (!response.ok) throw new Error(`Failed to delete study ${id}.`);
+            console.log(`Study ${id} deleted.`);
+            return true;
+        } catch (error) {
+            console.error('Error deleting study:', error);
+            return false;
+        }
+    }
+
+    deleteBtn.addEventListener('click', async () => {
+        const selectedCheckboxes = document.querySelectorAll('.study-checkbox:checked');
+        const idsToDelete = Array.from(selectedCheckboxes).map(cb => cb.dataset.id);
+
+        if (confirm(`Are you sure you want to delete \${idsToDelete.length} study(s)?`)) {
+            // Since DRF doesn't easily support bulk DELETE, loop and delete
+            const results = await Promise.all(idsToDelete.map(id => deleteStudy(id)));
+            if (results.every(r => r === true)) {
+                 alert('Selected studies deleted successfully.');
+            } else {
+                 alert('Some deletions failed. Check console for details.');
+            }
+            fetchStudies(); // Refresh the list
+        }
+    });
+
+    // --- Checkbox Management ---
+    function attachCheckboxListeners() {
+        const checkboxes = document.querySelectorAll('.study-checkbox');
+        const selectAll = document.getElementById('select-all');
+        
+        const updateDeleteButtonState = () => {
+            const checkedCount = document.querySelectorAll('.study-checkbox:checked').length;
+            deleteBtn.disabled = checkedCount === 0;
+        };
+
+        checkboxes.forEach(cb => cb.addEventListener('change', updateDeleteButtonState));
+        
+        selectAll.addEventListener('change', (e) => {
+            checkboxes.forEach(cb => cb.checked = e.target.checked);
+            updateDeleteButtonState();
+        });
+    }
+
+
+    // Initial load
+    fetchStudies();
+</script>
+{% endblock content %}

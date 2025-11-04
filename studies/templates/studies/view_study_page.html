@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>View Study Details</h2>
+    
+    <div id="study-details">
+        {# Details will be populated here #}
+        <p>Loading study...</p>
+    </div>
+    
+    <a href="{% url 'main_view_page' %}" class="btn btn-secondary mt-3">Cancel (Go Back to Main View Page)</a>
+</div>
+
+<script>
+    // The study_id is passed from the Django view context
+    const studyId = {{ study_id }}; 
+    const apiUrl = `/api/studies/${studyId}/`;
+    const detailsDiv = document.getElementById('study-details');
+
+    // --- R (Read) - Fetch and Display Single Study ---
+    async function fetchStudyDetails() {
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error('Study not found.');
+            
+            const study = await response.json();
+
+            detailsDiv.innerHTML = `
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Study ID:</strong> ${study.id}</li>
+                    <li class="list-group-item"><strong>Study Name:</strong> ${study.study_name}</li>
+                    <li class="list-group-item"><strong>Study Phase:</strong> ${study.study_phase}</li>
+                    <li class="list-group-item"><strong>Sponsor Name:</strong> ${study.sponsor_name}</li>
+                    <li class="list-group-item"><strong>Study Description:</strong> ${study.study_description}</li>
+                </ul>
+            `;
+        } catch (error) {
+            console.error('Error fetching study details:', error);
+            detailsDiv.innerHTML = '<div class="alert alert-danger">Could not load study details.</div>';
+        }
+    }
+
+    fetchStudyDetails();
+</script>
+{% endblock content %}

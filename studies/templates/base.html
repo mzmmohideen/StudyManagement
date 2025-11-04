@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Study Management{% endblock title %}</title>
+    
+    {# 1. CSS (Bootstrap for styling) #}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+          rel="stylesheet" 
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
+          crossorigin="anonymous">
+    
+    {# 2. Custom CSS (optional, if you create studies/static/css/styles.css) #}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
+    {# Block for page-specific styles if needed #}
+    {% block extra_head %}{% endblock extra_head %}
+
+</head>
+<body>
+    
+    {# Navigation Bar (Simple Header) #}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="{% url 'main_view_page' %}">Study Management System</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'main_view_page' %}">Studies</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'add_study_page' %}">Add New</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    {# Main Content Area: All other templates will inject their HTML here #}
+    <div class="container mt-5">
+        {% block content %}
+        {# Default content if child template doesn't define 'content' #}
+        {% endblock content %}
+    </div>
+
+    {# Footer (Optional) #}
+    <footer class="mt-5 py-3 bg-light text-center">
+        <div class="container">
+            <p>&copy; 2025 Study Management App</p>
+        </div>
+    </footer>
+
+    {# 3. JavaScript (Bootstrap bundle for functionality like nav toggles) #}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+            crossorigin="anonymous">
+    </script>
+    
+    {# Block for page-specific scripts #}
+    {% block extra_js %}{% endblock extra_js %}
+
+</body>
+</html>

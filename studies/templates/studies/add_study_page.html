@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Add New Study</h2>
+    
+    <form id="add-study-form">
+        {% csrf_token %} 
+        
+        {# Fields based on your model: Name, Phase, Sponsor, Description #}
+        
+        <div class="mb-3">
+            <label for="study_name" class="form-label">Study Name</label>
+            <input type="text" class="form-control" id="study_name" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="study_phase" class="form-label">Study Phase</label>
+            <select class="form-select" id="study_phase" required>
+                <option value="">Select Phase</option>
+                <option value="Phase I">Phase I</option>
+                <option value="Phase II">Phase II</option>
+                <option value="Phase III">Phase III</option>
+                <option value="Phase IV">Phase IV</option>
+            </select>
+        </div>
+        
+        <div class="mb-3">
+            <label for="sponsor_name" class="form-label">Sponsor Name</label>
+            <input type="text" class="form-control" id="sponsor_name" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="study_description" class="form-label">Study Description</label>
+            <textarea class="form-control" id="study_description" rows="3" required></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-success">Save</button>
+        <a href="{% url 'main_view_page' %}" class="btn btn-secondary">Cancel</a>
+        
+        <div id="message" class="mt-3"></div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('add-study-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const data = {
+            study_name: document.getElementById('study_name').value,
+            study_phase: document.getElementById('study_phase').value,
+            sponsor_name: document.getElementById('sponsor_name').value,
+            study_description: document.getElementById('study_description').value,
+        };
+        
+        const apiUrl = '/api/studies/';
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}' // CRITICAL for POST requests
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                // Handle DRF validation errors
+                const errorData = await response.json();
+                document.getElementById('message').innerHTML = '<div class="alert alert-danger">Error: ' + JSON.stringify(errorData) + '</div>';
+                return;
+            }
+
+            // Success: Redirect to Main View Page
+            window.location.href = "{% url 'main_view_page' %}";
+
+        } catch (error) {
+            console.error('Save failed:', error);
+            document.getElementById('message').innerHTML = '<div class="alert alert-danger">An unexpected error occurred.</div>';
+        }
+    });
+</script>
+{% endblock content %}
